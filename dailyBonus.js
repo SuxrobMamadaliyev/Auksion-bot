@@ -1,6 +1,6 @@
-const { getText, LANGUAGES } = require('../../config/languages');
-const { isAdmin, getMainMenuKeyboard } = require('../utils/helpers');
-const User = require('../models/User');
+const { getText, LANGUAGES } = require('./languages');
+const { isAdmin, getMainMenuKeyboard } = require('./helpers');
+const User = require('./User');
 
 module.exports = function registerDailyBonusHandler(bot) {
   const triggers = Object.values(LANGUAGES).map(l => l.main_menu_daily_bonus);
@@ -14,7 +14,7 @@ module.exports = function registerDailyBonusHandler(bot) {
 
     const now = new Date();
     const lastBonus = user.lastBonus ? new Date(user.lastBonus) : null;
-    const BONUS_INTERVAL = 24 * 60 * 60 * 1000; // 24 soat
+    const BONUS_INTERVAL = 24 * 60 * 60 * 1000;
 
     if (!lastBonus || (now - lastBonus) >= BONUS_INTERVAL) {
       const bonusAmount = 0.5;
