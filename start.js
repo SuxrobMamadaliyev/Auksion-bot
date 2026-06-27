@@ -1,7 +1,7 @@
-const { getText } = require('../../config/languages');
-const { getOrCreateUser, getUserByRefCode, isAdmin, checkSubscription, getMainMenuKeyboard } = require('../utils/helpers');
-const { getSetting } = require('../models/Settings');
-const User = require('../models/User');
+const { getText } = require('./languages');
+const { getOrCreateUser, getUserByRefCode, isAdmin, checkSubscription, getMainMenuKeyboard } = require('./helpers');
+const { getSetting } = require('./Settings');
+const User = require('./User');
 
 module.exports = function registerStartHandler(bot) {
   bot.onText(/\/start(.*)/, async (msg, match) => {
@@ -12,7 +12,6 @@ module.exports = function registerStartHandler(bot) {
 
     const user = await getOrCreateUser(userId, name);
 
-    // Referral
     if (param && !user.referredBy && param !== user.refCode) {
       const referrer = await getUserByRefCode(param);
       if (referrer && String(referrer.telegramId) !== userId) {
@@ -21,7 +20,6 @@ module.exports = function registerStartHandler(bot) {
       }
     }
 
-    // Lang tanlash
     if (!user.lang) {
       return bot.sendMessage(chatId, '🌐 Tilni tanlang / Выберите язык / Choose language:', {
         reply_markup: {
