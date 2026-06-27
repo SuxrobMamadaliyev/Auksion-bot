@@ -28,7 +28,8 @@ module.exports = function registerReferralHandlers(bot) {
       reply_markup: {
         inline_keyboard: [
           [{ text: getText(lang, 'referral_btn_share'), url: `https://t.me/share/url?url=${encodeURIComponent(refLink)}` }],
-          [{ text: getText(lang, 'referral_btn_top'), callback_data: 'top_referrals' }]
+          [{ text: getText(lang, 'referral_btn_top'), callback_data: 'top_referrals' }],
+          [{ text: { uz: '🔙 Orqaga', ru: '🔙 Назад', en: '🔙 Back' }[lang] || '🔙 Orqaga', callback_data: 'menu_earn' }]
         ]
       }
     });
@@ -49,6 +50,9 @@ module.exports = function registerReferralHandlers(bot) {
     });
 
     await bot.answerCallbackQuery(query.id);
-    await bot.sendMessage(query.message.chat.id, text, { parse_mode: 'HTML' });
+    await bot.sendMessage(query.message.chat.id, text, {
+      parse_mode: 'HTML',
+      reply_markup: { inline_keyboard: [[{ text: { uz: '🔙 Orqaga', ru: '🔙 Назад', en: '🔙 Back' }[lang] || '🔙 Orqaga', callback_data: 'referral_menu' }]] }
+    });
   });
 };
