@@ -10,6 +10,11 @@ module.exports = function registerStartHandler(bot) {
     const name = [msg.from.first_name, msg.from.last_name].filter(Boolean).join(' ') || '..';
     const param = (match[1] || '').trim();
 
+    // Eski reply keyboard ni o'chirish
+    await bot.sendMessage(chatId, '👋', {
+      reply_markup: { remove_keyboard: true }
+    }).then(m => bot.deleteMessage(chatId, m.message_id)).catch(() => {});
+
     const user = await getOrCreateUser(userId, name);
 
     if (param && !user.referredBy && param !== user.refCode) {
