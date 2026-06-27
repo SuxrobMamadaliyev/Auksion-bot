@@ -16,6 +16,7 @@ const registerAuctionHandlers = require('./auction');
 const registerAdminHandlers = require('./admin');
 const registerEarnStarsHandlers = require('./earnStars');
 const registerMenuRouter = require('./menuRouter');
+const { startTonMonitor } = require('./tonPayment');
 
 const BOT_TOKEN = process.env.BOT_TOKEN;
 const MONGODB_URI = process.env.MONGODB_URI;
@@ -51,6 +52,9 @@ async function main() {
   registerAdminHandlers(bot);
   registerEarnStarsHandlers(bot);
   registerMenuRouter(bot);
+
+  // TON avto monitoring
+  startTonMonitor(bot);
 
   const app = express();
   app.use(express.json());
