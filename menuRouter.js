@@ -1,8 +1,13 @@
 const { getText, LANGUAGES } = require('./languages');
-const { isAdmin, getMainMenuKeyboard, getBackKeyboard } = require('./helpers');
+const { isAdmin, getMainMenuKeyboard } = require('./helpers');
 const { getSetting } = require('./Settings');
 const User = require('./User');
 const Task = require('./Task');
+
+const BACK_BTN = (lang) => ({
+  text: { uz: '🔙 Orqaga', ru: '🔙 Назад', en: '🔙 Back' }[lang] || '🔙 Orqaga',
+  callback_data: 'menu_back'
+});
 
 module.exports = function registerMenuRouter(bot) {
 
@@ -39,10 +44,11 @@ module.exports = function registerMenuRouter(bot) {
 
       const keyboard = [];
       if (auction.active) {
-        keyboard.push([{ text: getText(lang, 'auction_btn_watch'), callback_data: 'auction_bid' }]);
+        keyboard.push([{ text: getText(lang, 'auction_btn_watch'), callback_data: 'auction_bid', style: 'primary' }]);
       } else {
-        keyboard.push([{ text: getText(lang, 'auction_btn_start'), callback_data: 'auction_start' }]);
+        keyboard.push([{ text: getText(lang, 'auction_btn_start'), callback_data: 'auction_start', style: 'success' }]);
       }
+      keyboard.push([BACK_BTN(lang)]);
 
       return bot.sendMessage(chatId, `${rulesTitle}\n${rules}${auctionStatus}`, {
         parse_mode: 'HTML',
@@ -58,14 +64,15 @@ module.exports = function registerMenuRouter(bot) {
         en: '💼 <b>EARN STARS</b>\n\n🌟 Choose a method\n⭐ to start earning stars!'
       };
       const btnReferral = { uz: '👥 Do\'stlarni taklif qilish', ru: '👥 Пригласить друзей', en: '👥 Invite Friends' };
-      const btnTasks   = { uz: '📋 Vazifalar bajarish',       ru: '📋 Выполнить задания',  en: '📋 Complete Tasks' };
+      const btnTasks   = { uz: '📋 Vazifalar bajarish', ru: '📋 Выполнить задания', en: '📋 Complete Tasks' };
 
       return bot.sendMessage(chatId, texts[lang] || texts.uz, {
         parse_mode: 'HTML',
         reply_markup: {
           inline_keyboard: [
-            [{ text: btnReferral[lang] || btnReferral.uz, callback_data: 'referral_menu' }],
-            [{ text: btnTasks[lang]   || btnTasks.uz,     callback_data: 'tasks_menu'    }]
+            [{ text: btnReferral[lang] || btnReferral.uz, callback_data: 'referral_menu', style: 'success' }],
+            [{ text: btnTasks[lang]   || btnTasks.uz,     callback_data: 'tasks_menu',    style: 'success' }],
+            [BACK_BTN(lang)]
           ]
         }
       });
@@ -87,8 +94,9 @@ module.exports = function registerMenuRouter(bot) {
         parse_mode: 'HTML',
         reply_markup: {
           inline_keyboard: [
-            [{ text: (btnTexts[lang] || btnTexts.uz)[0], callback_data: 'inline_stars_auto' }],
-            [{ text: (btnTexts[lang] || btnTexts.uz)[1], callback_data: 'inline_ton_auto'   }]
+            [{ text: (btnTexts[lang] || btnTexts.uz)[0], callback_data: 'inline_stars_auto', style: 'success' }],
+            [{ text: (btnTexts[lang] || btnTexts.uz)[1], callback_data: 'inline_ton_auto',   style: 'success' }],
+            [BACK_BTN(lang)]
           ]
         }
       });
@@ -99,7 +107,9 @@ module.exports = function registerMenuRouter(bot) {
       if (!user) return;
       user.state = 'withdraw_ask_username';
       await user.save();
-      return bot.sendMessage(chatId, getText(lang, 'withdraw_ask_username'), getBackKeyboard(lang));
+      return bot.sendMessage(chatId, getText(lang, 'withdraw_ask_username'), {
+        reply_markup: { inline_keyboard: [[BACK_BTN(lang)]] }
+      });
     }
 
     // ── HISOB ─────────────────────────────────────────────────
@@ -131,10 +141,13 @@ module.exports = function registerMenuRouter(bot) {
       return bot.sendMessage(chatId, text, {
         parse_mode: 'HTML',
         reply_markup: {
-          inline_keyboard: [[
-            { text: getText(lang, 'balance_btn_deposit_stars'), callback_data: 'deposit'  },
-            { text: getText(lang, 'balance_btn_withdraw_stars'), callback_data: 'withdraw' }
-          ]]
+          inline_keyboard: [
+            [
+              { text: getText(lang, 'balance_btn_deposit_stars'), callback_data: 'deposit',  style: 'success' },
+              { text: getText(lang, 'balance_btn_withdraw_stars'), callback_data: 'withdraw', style: 'success' }
+            ],
+            [BACK_BTN(lang)]
+          ]
         }
       });
     }
@@ -161,20 +174,23 @@ module.exports = function registerMenuRouter(bot) {
         const minutes = Math.floor((remaining % 3600000) / 60000);
         const seconds = Math.floor((remaining % 60000) / 1000);
         return bot.sendMessage(chatId,
-          getText(lang, 'daily_bonus_taken', { hours, minutes, seconds })
-        );
+          getText(lang, 'daily_bonus_taken', { hours, minutes, seconds }), {
+          reply_markup: { inline_keyboard: [[BACK_BTN(lang)]] }
+        });
       }
     }
 
     // ── TO'LOVLAR ─────────────────────────────────────────────
     if (data === 'menu_payments') {
-      // admin.js dagi payment logikasini chaqirish uchun
       const txt = {
         uz: '📋 <b>To\'lovlar</b>\n\nHozircha to\'lovlar mavjud emas.',
         ru: '📋 <b>Платежи</b>\n\nПока нет платежей.',
         en: '📋 <b>Payments</b>\n\nNo payments yet.'
       };
-      return bot.sendMessage(chatId, txt[lang] || txt.uz, { parse_mode: 'HTML' });
+      return bot.sendMessage(chatId, txt[lang] || txt.uz, {
+        parse_mode: 'HTML',
+        reply_markup: { inline_keyboard: [[BACK_BTN(lang)]] }
+      });
     }
 
     // ── YORDAM ────────────────────────────────────────────────
@@ -184,7 +200,10 @@ module.exports = function registerMenuRouter(bot) {
         ru: '🆘 <b>Помощь</b>\n\n📌 По вопросам о боте:\nОбратитесь к @admin_username.',
         en: '🆘 <b>Help</b>\n\n📌 For questions about the bot:\nContact @admin_username.'
       };
-      return bot.sendMessage(chatId, txt[lang] || txt.uz, { parse_mode: 'HTML' });
+      return bot.sendMessage(chatId, txt[lang] || txt.uz, {
+        parse_mode: 'HTML',
+        reply_markup: { inline_keyboard: [[BACK_BTN(lang)]] }
+      });
     }
 
     // ── REKLAMA ───────────────────────────────────────────────
@@ -194,32 +213,40 @@ module.exports = function registerMenuRouter(bot) {
         ru: '📢 <b>Реклама</b>\n\nДля размещения рекламы свяжитесь с администратором.',
         en: '📢 <b>Advertising</b>\n\nContact admin to place an ad.'
       };
-      return bot.sendMessage(chatId, txt[lang] || txt.uz, { parse_mode: 'HTML' });
+      return bot.sendMessage(chatId, txt[lang] || txt.uz, {
+        parse_mode: 'HTML',
+        reply_markup: { inline_keyboard: [[BACK_BTN(lang)]] }
+      });
     }
 
     // ── BROADCAST (admin) ─────────────────────────────────────
     if (data === 'menu_broadcast') {
       if (!admin) return bot.sendMessage(chatId, '❌ Ruxsat yo\'q!');
-      const txt = { uz: '📢 Barcha foydalanuvchilarga yuboriladigan xabarni kiriting:', ru: '📢 Введите сообщение:', en: '📢 Enter broadcast message:' };
       if (!user) return;
       user.state = 'broadcast_message';
       await user.save();
-      return bot.sendMessage(chatId, txt[lang] || txt.uz);
+      const txt = {
+        uz: '📢 Barcha foydalanuvchilarga yuboriladigan xabarni kiriting:',
+        ru: '📢 Введите сообщение для рассылки:',
+        en: '📢 Enter broadcast message:'
+      };
+      return bot.sendMessage(chatId, txt[lang] || txt.uz, {
+        reply_markup: { inline_keyboard: [[BACK_BTN(lang)]] }
+      });
     }
 
     // ── ADMIN PANEL ───────────────────────────────────────────
     if (data === 'menu_admin') {
       if (!admin) return bot.sendMessage(chatId, '❌ Ruxsat yo\'q!');
-      // admin.js dagi panel logikasini trigger qilamiz
-      // Admin panel xabar trigger sifatida ishlaydi
       return bot.sendMessage(chatId, '🔧 <b>Admin Panel</b>', {
         parse_mode: 'HTML',
         reply_markup: {
           inline_keyboard: [
-            [{ text: '👥 Foydalanuvchilar', callback_data: 'admin_users'    }],
-            [{ text: '📊 Statistika',        callback_data: 'admin_stats'    }],
-            [{ text: '📢 Broadcast',         callback_data: 'admin_broadcast'}],
-            [{ text: '⚙️ Sozlamalar',        callback_data: 'admin_settings' }],
+            [{ text: '👥 Foydalanuvchilar', callback_data: 'admin_users',     style: 'primary' }],
+            [{ text: '📊 Statistika',        callback_data: 'admin_stats',     style: 'primary' }],
+            [{ text: '📢 Broadcast',         callback_data: 'admin_broadcast', style: 'success' }],
+            [{ text: '⚙️ Sozlamalar',        callback_data: 'admin_settings',  style: 'success' }],
+            [BACK_BTN(lang)]
           ]
         }
       });
@@ -236,3 +263,8 @@ module.exports = function registerMenuRouter(bot) {
     }
   });
 };
+
+// ── ORQAGA tugmasi earnStars va referral sahifalarida ham ──
+// earnStars.js dagi tasks_menu ga orqaga
+// referral.js ga orqaga — bu fayllar o'zida backni qo'shish kerak
+
