@@ -32,7 +32,7 @@ async function main() {
 
   await initSettings();
 
-  const bot = new TelegramBot(BOT_TOKEN, { webHook: { port: PORT } });
+  const bot = new TelegramBot(BOT_TOKEN, { webHook: true });
 
   const webhookUrl = `${RENDER_URL}/bot${BOT_TOKEN}`;
   await bot.setWebHook(webhookUrl);
@@ -46,6 +46,7 @@ async function main() {
   registerDailyBonusHandler(bot);
   registerReferralHandlers(bot);
   registerAuctionHandlers(bot);
+  await registerAuctionHandlers.resumeAuctionTimer(bot);
   registerAdminHandlers(bot);
   registerEarnStarsHandlers(bot);
 
