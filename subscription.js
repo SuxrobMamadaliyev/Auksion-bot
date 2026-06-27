@@ -1,10 +1,9 @@
-const { getText } = require('../../config/languages');
-const { checkSubscription, isAdmin, getMainMenuKeyboard } = require('../utils/helpers');
-const { getSetting } = require('../models/Settings');
-const User = require('../models/User');
+const { getText } = require('./languages');
+const { checkSubscription, isAdmin, getMainMenuKeyboard } = require('./helpers');
+const { getSetting } = require('./Settings');
+const User = require('./User');
 
 module.exports = function registerSubscriptionHandlers(bot) {
-  // Lang tanlash callback
   bot.on('callback_query', async (query) => {
     if (!query.data.startsWith('set_lang_')) return;
     const lang = query.data.replace('set_lang_', '');
@@ -37,7 +36,6 @@ module.exports = function registerSubscriptionHandlers(bot) {
     return bot.sendMessage(query.message.chat.id, getText(lang, 'welcome'), getMainMenuKeyboard(lang, admin));
   });
 
-  // Obuna tekshirish
   bot.on('callback_query', async (query) => {
     if (query.data !== 'check_sub') return;
     const userId = String(query.from.id);
@@ -51,7 +49,6 @@ module.exports = function registerSubscriptionHandlers(bot) {
       await bot.answerCallbackQuery(query.id, { text: getText(lang, 'sub_success'), show_alert: true });
       await bot.deleteMessage(query.message.chat.id, query.message.message_id).catch(() => {});
 
-      // Referral bonus
       if (user && user.referredBy && !user.refBonusGiven) {
         const referrer = await User.findOne({ refCode: user.referredBy });
         if (referrer) {
@@ -60,7 +57,6 @@ module.exports = function registerSubscriptionHandlers(bot) {
           await referrer.save();
           user.refBonusGiven = true;
           await user.save();
-          // Referrer ga xabar
           try {
             await bot.sendMessage(referrer.telegramId,
               getText(referrer.lang || 'uz', 'new_referral_bonus', { username: query.from.username || query.from.first_name })
