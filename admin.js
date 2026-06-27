@@ -1,8 +1,8 @@
-const { getText, LANGUAGES } = require('../../config/languages');
-const { isAdmin, getMainMenuKeyboard } = require('../utils/helpers');
-const { getSetting, setSetting } = require('../models/Settings');
-const User = require('../models/User');
-const Task = require('../models/Task');
+const { getText, LANGUAGES } = require('./languages');
+const { isAdmin, getMainMenuKeyboard } = require('./helpers');
+const { getSetting, setSetting } = require('./Settings');
+const User = require('./User');
+const Task = require('./Task');
 
 module.exports = function registerAdminHandlers(bot) {
   // Admin panel
