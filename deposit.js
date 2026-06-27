@@ -346,8 +346,4 @@ module.exports = function registerDepositHandlers(bot) {
   });
 };
 
-function getText(lang, key, vars = {}) {
-  try {
-    return require('./languages').getText(lang, key, vars);
-  } catch(e) { return key; }
-}
+
