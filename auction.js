@@ -1,8 +1,8 @@
-const { getText, LANGUAGES } = require('../../config/languages');
-const { isAdmin, getMainMenuKeyboard } = require('../utils/helpers');
-const { getSetting } = require('../models/Settings');
-const User = require('../models/User');
-const Auction = require('../models/Auction');
+const { getText, LANGUAGES } = require('./languages');
+const { isAdmin, getMainMenuKeyboard } = require('./helpers');
+const { getSetting } = require('./Settings');
+const User = require('./User');
+const Auction = require('./Auction');
 
 let auctionTimer = null;
 
@@ -50,6 +50,20 @@ async function endAuction(bot) {
   auction.endTime = null;
   auction.messageId = null;
   await auction.save();
+}
+
+async function resumeAuctionTimer(bot) {
+  const Auction = require('./Auction');
+  const auction = await Auction.findOne();
+  if (!auction || !auction.active || !auction.endTime) return;
+  const remaining = new Date(auction.endTime) - new Date();
+  if (remaining <= 0) {
+    await endAuction(bot);
+  } else {
+    if (auctionTimer) clearTimeout(auctionTimer);
+    auctionTimer = setTimeout(() => endAuction(bot), remaining);
+    console.log(`✅ Auksion taymer tiklandi: ${Math.round(remaining/1000)}s qoldi`);
+  }
 }
 
 module.exports = function registerAuctionHandlers(bot) {
@@ -257,3 +271,5 @@ module.exports = function registerAuctionHandlers(bot) {
     }
   });
 };
+
+module.exports.resumeAuctionTimer = resumeAuctionTimer;
