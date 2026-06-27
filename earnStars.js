@@ -1,8 +1,8 @@
-const { getText, LANGUAGES } = require('../../config/languages');
-const { isAdmin, getMainMenuKeyboard } = require('../utils/helpers');
-const { getSetting } = require('../models/Settings');
-const User = require('../models/User');
-const Task = require('../models/Task');
+const { getText, LANGUAGES } = require('./languages');
+const { isAdmin, getMainMenuKeyboard } = require('./helpers');
+const { getSetting } = require('./Settings');
+const User = require('./User');
+const Task = require('./Task');
 
 module.exports = function registerEarnStarsHandlers(bot) {
   const earnTriggers = Object.values(LANGUAGES).map(l => l.main_menu_earn_stars);
@@ -32,7 +32,6 @@ module.exports = function registerEarnStarsHandlers(bot) {
     });
   });
 
-  // Tasks menu
   bot.on('callback_query', async (query) => {
     if (query.data !== 'tasks_menu') return;
     const userId = String(query.from.id);
@@ -70,7 +69,6 @@ module.exports = function registerEarnStarsHandlers(bot) {
     });
   });
 
-  // Vazifani ko'rish
   bot.on('callback_query', async (query) => {
     if (!query.data.startsWith('task_view_')) return;
     const taskId = query.data.replace('task_view_', '');
@@ -97,7 +95,6 @@ module.exports = function registerEarnStarsHandlers(bot) {
     });
   });
 
-  // Vazifa bajarildi
   bot.on('callback_query', async (query) => {
     if (!query.data.startsWith('task_done_')) return;
     const taskId = query.data.replace('task_done_', '');
