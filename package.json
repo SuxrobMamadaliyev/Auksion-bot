@@ -2,10 +2,10 @@
   "name": "getstars-telegram-bot",
   "version": "1.0.0",
   "description": "GetStars Telegram Bot - Node.js + MongoDB",
-  "main": "src/index.js",
+  "main": "index.js",
   "scripts": {
-    "start": "node src/index.js",
-    "dev": "nodemon src/index.js"
+    "start": "node index.js",
+    "dev": "nodemon index.js"
   },
   "dependencies": {
     "node-telegram-bot-api": "^0.66.0",
