@@ -15,6 +15,7 @@ const registerReferralHandlers = require('./referral');
 const registerAuctionHandlers = require('./auction');
 const registerAdminHandlers = require('./admin');
 const registerEarnStarsHandlers = require('./earnStars');
+const registerMenuRouter = require('./menuRouter');
 
 const BOT_TOKEN = process.env.BOT_TOKEN;
 const MONGODB_URI = process.env.MONGODB_URI;
@@ -49,6 +50,7 @@ async function main() {
   await registerAuctionHandlers.resumeAuctionTimer(bot);
   registerAdminHandlers(bot);
   registerEarnStarsHandlers(bot);
+  registerMenuRouter(bot);
 
   const app = express();
   app.use(express.json());
