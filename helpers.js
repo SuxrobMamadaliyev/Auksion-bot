@@ -1,7 +1,7 @@
 const crypto = require('crypto');
-const User = require('../models/User');
-const { getText } = require('../../config/languages');
-const { getSetting } = require('../models/Settings');
+const User = require('./User');
+const { getText } = require('./languages');
+const { getSetting } = require('./Settings');
 
 function generateRefCode(length = 10) {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -16,7 +16,6 @@ async function getOrCreateUser(telegramId, name) {
   let user = await User.findOne({ telegramId: String(telegramId) });
   if (!user) {
     let refCode = generateRefCode();
-    // Unique refCode
     while (await User.findOne({ refCode })) {
       refCode = generateRefCode();
     }
