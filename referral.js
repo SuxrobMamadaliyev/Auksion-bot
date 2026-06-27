@@ -9,7 +9,7 @@ module.exports = function registerReferralHandlers(bot) {
     if (!user) return;
     const lang = user.lang || 'uz';
 
-    const refLink = `https://t.me/GetStars_zs_Bot?start=${user.refCode}`;
+    const refLink = `https://t.me/auksionstarsbot?start=${user.refCode}`;
     const refCount = user.referrals.length;
 
     const caption = [
