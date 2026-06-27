@@ -49,13 +49,17 @@ module.exports = function registerEarnStarsHandlers(bot) {
         ru: '📋 <b>ЗАДАНИЯ</b>\n\n❌ Заданий пока нет.\n⏳ Проверьте позже!',
         en: '📋 <b>TASKS</b>\n\n❌ No tasks available.\n⏳ Check later!'
       };
-      return bot.sendMessage(query.message.chat.id, txt[lang] || txt.uz, { parse_mode: 'HTML' });
+      return bot.sendMessage(query.message.chat.id, txt[lang] || txt.uz, {
+        parse_mode: 'HTML',
+        reply_markup: { inline_keyboard: [[{ text: { uz: '🔙 Orqaga', ru: '🔙 Назад', en: '🔙 Back' }[lang] || '🔙 Orqaga', callback_data: 'menu_earn' }]] }
+      });
     }
 
     const keyboard = available.map(t => ([{
       text: `${t.title} — ${t.reward} ⭐`,
       callback_data: `task_view_${t._id}`
     }]));
+    keyboard.push([{ text: { uz: '🔙 Orqaga', ru: '🔙 Назад', en: '🔙 Back' }[lang] || '🔙 Orqaga', callback_data: 'menu_earn' }]);
 
     const txt = {
       uz: `📋 <b>VAZIFALAR</b>\n\n✅ Mavjud: <b>${available.length}</b> ta`,
@@ -89,7 +93,8 @@ module.exports = function registerEarnStarsHandlers(bot) {
       reply_markup: {
         inline_keyboard: [
           task.url ? [{ text: '🔗 O\'tish', url: task.url }] : [],
-          [{ text: doneBtn[lang] || doneBtn.uz, callback_data: `task_done_${taskId}` }]
+          [{ text: doneBtn[lang] || doneBtn.uz, callback_data: `task_done_${taskId}`, style: 'success' }],
+          [{ text: { uz: '🔙 Orqaga', ru: '🔙 Назад', en: '🔙 Back' }[lang] || '🔙 Orqaga', callback_data: 'tasks_menu' }]
         ].filter(r => r.length > 0)
       }
     });
