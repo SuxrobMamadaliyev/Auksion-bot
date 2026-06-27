@@ -1,12 +1,11 @@
-const { getText, LANGUAGES } = require('../../config/languages');
-const { isAdmin, getMainMenuKeyboard, getBackKeyboard } = require('../utils/helpers');
-const { getSetting } = require('../models/Settings');
-const User = require('../models/User');
+const { getText, LANGUAGES } = require('./languages');
+const { isAdmin, getMainMenuKeyboard, getBackKeyboard } = require('./helpers');
+const { getSetting } = require('./Settings');
+const User = require('./User');
 
 module.exports = function registerWithdrawHandlers(bot) {
   const withdrawTriggers = Object.values(LANGUAGES).map(l => l.main_menu_withdraw);
 
-  // Withdraw menu
   bot.on('message', async (msg) => {
     if (!withdrawTriggers.includes(msg.text)) return;
     const userId = String(msg.from.id);
@@ -20,7 +19,6 @@ module.exports = function registerWithdrawHandlers(bot) {
     await bot.sendMessage(msg.chat.id, getText(lang, 'withdraw_ask_username'), getBackKeyboard(lang));
   });
 
-  // State handler
   bot.on('message', async (msg) => {
     if (!msg.text || msg.text.startsWith('/')) return;
     const userId = String(msg.from.id);
@@ -28,7 +26,6 @@ module.exports = function registerWithdrawHandlers(bot) {
     if (!user) return;
     const lang = user.lang || 'uz';
 
-    // Orqaga
     if (msg.text === getText(lang, 'back_button')) {
       user.state = null;
       user.stateData = {};
@@ -59,7 +56,6 @@ module.exports = function registerWithdrawHandlers(bot) {
     }
   });
 
-  // Tasdiqlash callback
   bot.on('callback_query', async (query) => {
     if (!['withdraw_confirm_yes', 'withdraw_confirm_no'].includes(query.data)) return;
     const userId = String(query.from.id);
@@ -75,7 +71,6 @@ module.exports = function registerWithdrawHandlers(bot) {
       return bot.sendMessage(query.message.chat.id, getText(lang, 'withdraw_cancelled'), getMainMenuKeyboard(lang, admin));
     }
 
-    // Usul tanlash
     user.state = 'withdraw_select_method';
     await user.save();
     await bot.answerCallbackQuery(query.id);
@@ -90,7 +85,6 @@ module.exports = function registerWithdrawHandlers(bot) {
     });
   });
 
-  // Usul tanlash
   bot.on('callback_query', async (query) => {
     if (!['withdraw_method_premium3', 'withdraw_method_premium6'].includes(query.data)) return;
     const userId = String(query.from.id);
@@ -110,7 +104,6 @@ module.exports = function registerWithdrawHandlers(bot) {
 
     const username = user.stateData?.username || '?';
 
-    // Admin ga xabar
     const adminMsg = `<b>📤 Yangi yechish so'rovi</b>\n\n👤 Foydalanuvchi: ${user.name}\n🆔 ID: <code>${userId}</code>\n🎯 Username: @${username}\n💸 Miqdor: ${requiredAmount} ⭐\n📦 Usul: ${methodName}`;
 
     try {
@@ -127,7 +120,6 @@ module.exports = function registerWithdrawHandlers(bot) {
       });
     } catch (e) {}
 
-    // Balansdan yechish (admindan keyin)
     user.state = null;
     user.stateData = {};
     await user.save();
@@ -135,7 +127,6 @@ module.exports = function registerWithdrawHandlers(bot) {
     await bot.sendMessage(query.message.chat.id, getText(lang, 'withdraw_request_sent'));
   });
 
-  // Admin tasdiqlash
   bot.on('callback_query', async (query) => {
     if (!query.data.startsWith('withdraw_admin_confirm_') && !query.data.startsWith('withdraw_admin_reject_')) return;
     const adminId = process.env.ADMIN_ID;
@@ -156,7 +147,7 @@ module.exports = function registerWithdrawHandlers(bot) {
     const parts = query.data.replace('withdraw_admin_confirm_', '').split('_');
     const targetId = parts[0];
     const amount = parseInt(parts[1]);
-    const username = parts[2];
+    const username = parts.slice(2).join('_');
 
     const targetUser = await User.findOne({ telegramId: targetId });
     if (!targetUser) return bot.answerCallbackQuery(query.id, { text: '❌ User topilmadi!', show_alert: true });
@@ -173,7 +164,6 @@ module.exports = function registerWithdrawHandlers(bot) {
     await bot.answerCallbackQuery(query.id, { text: getText(lang, 'withdraw_success_admin_alert') });
     await bot.sendMessage(targetId, getText(lang, 'withdraw_success_user', { amount, username }));
 
-    // To'lovlar kanaliga xabar
     const tolovKanali = '@jajkaaiaoa';
     try {
       await bot.sendMessage(tolovKanali,
