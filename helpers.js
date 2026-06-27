@@ -61,28 +61,28 @@ function getMainMenuKeyboard(lang, isAdmin = false) {
   const keyboard = [
     [
       { text: getText(lang, 'main_menu_auction'),     callback_data: 'menu_auction',  style: 'primary' },
-      { text: getText(lang, 'main_menu_earn_stars'),  callback_data: 'menu_earn',     style: 'success' },
+      { text: getText(lang, 'main_menu_earn_stars'),  callback_data: 'menu_earn',     style: 'primary' },
     ],
     [
       { text: getText(lang, 'main_menu_deposit'),     callback_data: 'menu_deposit',  style: 'success' },
-      { text: getText(lang, 'main_menu_withdraw'),    callback_data: 'menu_withdraw', style: 'danger'  },
+      { text: getText(lang, 'main_menu_withdraw'),    callback_data: 'menu_withdraw', style: 'success' },
     ],
     [
-      { text: getText(lang, 'main_menu_balance'),     callback_data: 'menu_balance',  style: 'primary' },
+      { text: getText(lang, 'main_menu_balance'),     callback_data: 'menu_balance',  style: 'success' },
       { text: getText(lang, 'main_menu_daily_bonus'), callback_data: 'menu_bonus',    style: 'success' },
     ],
     [
-      { text: getText(lang, 'main_menu_payments'),    callback_data: 'menu_payments'                   },
-      { text: '📢 Reklama',                           callback_data: 'menu_ads'                        },
+      { text: getText(lang, 'main_menu_payments'),    callback_data: 'menu_payments', style: 'success' },
+      { text: '📢 Reklama',                           callback_data: 'menu_ads',      style: 'success' },
     ],
     [
-      { text: getText(lang, 'main_menu_help'),        callback_data: 'menu_help'                       },
+      { text: getText(lang, 'main_menu_help'),        callback_data: 'menu_help',     style: 'danger'  },
     ],
   ];
   if (isAdmin) {
     keyboard.push([
-      { text: getText(lang, 'main_menu_broadcast'), callback_data: 'menu_broadcast'                },
-      { text: '🔧 Admin Panel',                     callback_data: 'menu_admin',  style: 'danger' },
+      { text: getText(lang, 'main_menu_broadcast'), callback_data: 'menu_broadcast', style: 'danger' },
+      { text: '🔧 Admin Panel',                     callback_data: 'menu_admin',     style: 'danger' },
     ]);
   }
   return {
