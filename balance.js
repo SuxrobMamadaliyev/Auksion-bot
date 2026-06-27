@@ -1,6 +1,6 @@
-const { getText, LANGUAGES } = require('../../config/languages');
-const { isAdmin, getMainMenuKeyboard } = require('../utils/helpers');
-const User = require('../models/User');
+const { getText, LANGUAGES } = require('./languages');
+const { isAdmin, getMainMenuKeyboard } = require('./helpers');
+const User = require('./User');
 
 module.exports = function registerBalanceHandlers(bot) {
   const balanceTriggers = Object.values(LANGUAGES).map(l => l.main_menu_balance);
@@ -16,7 +16,6 @@ module.exports = function registerBalanceHandlers(bot) {
     const sana = now.toLocaleDateString('uz-UZ');
     const vaqt = now.toLocaleTimeString('uz-UZ', { hour: '2-digit', minute: '2-digit' });
 
-    // Hisob raqami - MongoDB-dan foydalanuvchi tartib raqami
     const allUsers = await User.find({}, { telegramId: 1 }).sort({ createdAt: 1 });
     const index = allUsers.findIndex(u => u.telegramId === userId);
     const accNum = index >= 0 ? `#${index + 1}` : '—';
