@@ -1,12 +1,11 @@
-const { getText, LANGUAGES } = require('../../config/languages');
-const { getBackKeyboard, isAdmin, getMainMenuKeyboard } = require('../utils/helpers');
-const { getSetting, setSetting } = require('../models/Settings');
-const User = require('../models/User');
+const { getText, LANGUAGES } = require('./languages');
+const { getBackKeyboard, isAdmin, getMainMenuKeyboard } = require('./helpers');
+const { getSetting, setSetting } = require('./Settings');
+const User = require('./User');
 
 module.exports = function registerDepositHandlers(bot) {
   const depositTriggers = Object.values(LANGUAGES).map(l => l.main_menu_deposit);
 
-  // Deposit menu
   bot.on('message', async (msg) => {
     if (!depositTriggers.includes(msg.text)) return;
     const userId = String(msg.from.id);
@@ -36,7 +35,6 @@ module.exports = function registerDepositHandlers(bot) {
     });
   });
 
-  // Stars auto to'lov
   bot.on('callback_query', async (query) => {
     if (query.data !== 'inline_stars_auto' && query.data !== 'deposit') return;
     const userId = String(query.from.id);
@@ -62,7 +60,6 @@ module.exports = function registerDepositHandlers(bot) {
     });
   });
 
-  // Stars miqdorini tanlash
   bot.on('callback_query', async (query) => {
     if (!query.data.startsWith('stars_pay_')) return;
     const userId = String(query.from.id);
@@ -71,6 +68,7 @@ module.exports = function registerDepositHandlers(bot) {
     const amountStr = query.data.replace('stars_pay_', '');
 
     if (amountStr === 'custom') {
+      if (!user) return bot.answerCallbackQuery(query.id, { text: '❌ Xato!', show_alert: true });
       user.state = 'waiting_deposit_amount';
       await user.save();
       const txt = { uz: '📝 Necha ⭐ kiritmoqchisiz?\n\n📌 Masalan: 100', ru: '📝 Сколько ⭐?\n\n📌 Например: 100', en: '📝 How many ⭐?\n\n📌 Example: 100' };
@@ -97,12 +95,10 @@ module.exports = function registerDepositHandlers(bot) {
     );
   });
 
-  // Pre-checkout
   bot.on('pre_checkout_query', async (query) => {
     await bot.answerPreCheckoutQuery(query.id, true);
   });
 
-  // To'lov muvaffaqiyatli
   bot.on('message', async (msg) => {
     if (!msg.successful_payment) return;
     const payment = msg.successful_payment;
@@ -130,7 +126,6 @@ module.exports = function registerDepositHandlers(bot) {
     }
   });
 
-  // Custom amount state handler
   bot.on('message', async (msg) => {
     if (!msg.text || msg.text.startsWith('/')) return;
     const userId = String(msg.from.id);
