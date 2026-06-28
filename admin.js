@@ -58,6 +58,10 @@ module.exports = function registerAdminHandlers(bot) {
           ],
           [
             { text: '⚙️ Bot sozlamalari', callback_data: 'admin_settings_menu' }
+          ],
+          [
+            { text: '🖼 Asosiy menyu rasmi', callback_data: 'admin_set_menu_image' },
+            { text: '🗑 Rasmni o\'chirish', callback_data: 'admin_del_menu_image' }
           ]
         ]
       }
@@ -73,6 +77,13 @@ module.exports = function registerAdminHandlers(bot) {
     }
     const user = await User.findOne({ telegramId: userId });
     const lang = user?.lang || 'uz';
+    // Reply keyboardni o'chirib, inline panel yuborish
+    try {
+      const tmp = await bot.sendMessage(msg.chat.id, '🔧', {
+        reply_markup: { remove_keyboard: true }
+      });
+      await bot.deleteMessage(msg.chat.id, tmp.message_id);
+    } catch(e) {}
     await sendAdminPanel(msg.chat.id, lang);
   });
 
@@ -318,7 +329,7 @@ ${statusIcon} Holat: ${target.isBlocked ? 'Bloklangan' : 'Faol'}
     'admin_change_card','admin_change_price','admin_broadcast','admin_balance',
     'admin_add_task','admin_channels','admin_add_admin','admin_stats','admin_users',
     'admin_list_tasks','admin_block_user','admin_unblock_user','admin_search_user',
-    'admin_deduct_balance','admin_settings_menu','admin_channel_add','admin_channel_remove','admin_change_ton_rate'
+    'admin_deduct_balance','admin_settings_menu','admin_channel_add','admin_channel_remove','admin_change_ton_rate','admin_set_menu_image','admin_del_menu_image'
   ];
 
   bot.on('callback_query', async (query) => {
@@ -452,7 +463,7 @@ ${statusIcon} Holat: ${target.isBlocked ? 'Bloklangan' : 'Faol'}
               { text: '💳 Karta o\'zgartir', callback_data: 'admin_change_card' },
               { text: '⭐ Narx o\'zgartir', callback_data: 'admin_change_price' }
             ],
-            [{ text: '💎 TON kursi (1 TON = ? ⭐)', callback_data: 'admin_change_ton_rate' }],
+            [{ text: '💎 TON kursi (1 TON = ? ⭐)', callback_data: 'admin_change_ton_rate','admin_set_menu_image','admin_del_menu_image' }],
             [{ text: '🔙 Admin Panel', callback_data: 'menu_admin' }]
           ]
         }
@@ -490,7 +501,15 @@ ${statusIcon} Holat: ${target.isBlocked ? 'Bloklangan' : 'Faol'}
       admin_channel_add:    { state: 'admin_waiting_channel_add', msg: '➕ Kanal username kiriting (@kanal):' },
       admin_channel_remove: { state: 'admin_waiting_channel_remove', msg: '➖ O\'chirish uchun kanal username kiriting (@kanal):' },
       admin_change_ton_rate: { state: 'admin_waiting_ton_rate', msg: '💎 1 TON = necha ⭐ bo\'lsin?\n\nMasalan: 100\n(0 kiritsangiz avto kurs ishlatiladi)' },
+      admin_set_menu_image: { state: 'admin_waiting_menu_image', msg: '🖼 Asosiy menyu uchun rasm yuboring (uzun/banner rasm):' },
     };
+
+    // Rasmni o'chirish
+    if (data === 'admin_del_menu_image') {
+      const { setSetting } = require('./Settings');
+      await setSetting('main_menu_image', null);
+      return bot.sendMessage(query.message.chat.id, '✅ Asosiy menyu rasmi o\'chirildi.');
+    }
 
     if (stateMap[data]) {
       user.state = stateMap[data].state;
