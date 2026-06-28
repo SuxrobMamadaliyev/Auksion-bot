@@ -10,6 +10,7 @@ const auctionSchema = new mongoose.Schema({
   endTime: { type: Date, default: null },
   messageId: { type: Number, default: null },
   chatId: { type: Number, default: null },
+  leaderName: { type: String, default: null },
 }, { timestamps: true });
 
 module.exports = mongoose.model('Auction', auctionSchema);
