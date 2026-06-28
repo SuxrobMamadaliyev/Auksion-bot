@@ -3,6 +3,7 @@ const { isAdmin, getMainMenuKeyboard } = require('./helpers');
 const { getSetting } = require('./Settings');
 const User = require('./User');
 const Task = require('./Task');
+const { sendMainMenu } = require('./start');
 
 const BACK_BTN = (lang) => ({
   text: { uz: '🔙 Orqaga', ru: '🔙 Назад', en: '🔙 Back' }[lang] || '🔙 Orqaga',
@@ -23,38 +24,7 @@ module.exports = function registerMenuRouter(bot) {
 
     await bot.answerCallbackQuery(query.id);
 
-    // ── AUKSION ──────────────────────────────────────────────
-    if (data === 'menu_auction') {
-      const Auction = require('./Auction');
-      let auction = await Auction.findOne();
-      if (!auction) auction = await Auction.create({});
-
-      const rules = [1,2,3,4,5,6,7,8].map(i => getText(lang, `auction_rules_${i}`)).join('\n');
-      const rulesTitle = getText(lang, 'auction_rules_title');
-
-      let auctionStatus;
-      if (auction.active && auction.endTime) {
-        const remaining = Math.max(0, new Date(auction.endTime) - new Date());
-        const mins = Math.floor(remaining / 60000);
-        const secs = Math.floor((remaining % 60000) / 1000);
-        auctionStatus = `\n\n🔴 <b>Auksion faol!</b>\n💰 Joriy stavka: ${auction.currentBid} ⭐\n🏦 Bank: ${auction.bank} ⭐\n⏱ Qolgan vaqt: ${mins}:${String(secs).padStart(2,'0')}`;
-      } else {
-        auctionStatus = '\n\n⚪ Auksion hozirda faol emas.';
-      }
-
-      const keyboard = [];
-      if (auction.active) {
-        keyboard.push([{ text: getText(lang, 'auction_btn_watch'), callback_data: 'auction_bid', style: 'primary' }]);
-      } else {
-        keyboard.push([{ text: getText(lang, 'auction_btn_start'), callback_data: 'auction_start', style: 'success' }]);
-      }
-      keyboard.push([BACK_BTN(lang)]);
-
-      return bot.sendMessage(chatId, `${rulesTitle}\n${rules}${auctionStatus}`, {
-        parse_mode: 'HTML',
-        reply_markup: { inline_keyboard: keyboard }
-      });
-    }
+    // menu_auction — auction.js da handle qilinadi (duplicate oldini olish)
 
     // ── STARS ISHLASH ─────────────────────────────────────────
     if (data === 'menu_earn') {
@@ -78,29 +48,7 @@ module.exports = function registerMenuRouter(bot) {
       });
     }
 
-    // ── PUL KIRITISH ──────────────────────────────────────────
-    if (data === 'menu_deposit') {
-      const texts = {
-        uz: `💰 <b>PUL KIRITISH</b>\n\n💵 Sizning balansingiz: <b>${user?.balance || 0} ⭐</b>\n\n📝 To'lov usulini tanlang:`,
-        ru: `💰 <b>ПОПОЛНЕНИЕ</b>\n\n💵 Ваш баланс: <b>${user?.balance || 0} ⭐</b>\n\n📝 Выберите способ оплаты:`,
-        en: `💰 <b>DEPOSIT</b>\n\n💵 Your balance: <b>${user?.balance || 0} ⭐</b>\n\n📝 Choose payment method:`
-      };
-      const btnTexts = {
-        uz: ['⭐ Stars avto to\'lov', '💎 TON avto to\'lov'],
-        ru: ['⭐ Stars авто оплата', '💎 TON авто оплата'],
-        en: ['⭐ Stars auto payment', '💎 TON auto payment']
-      };
-      return bot.sendMessage(chatId, texts[lang] || texts.uz, {
-        parse_mode: 'HTML',
-        reply_markup: {
-          inline_keyboard: [
-            [{ text: (btnTexts[lang] || btnTexts.uz)[0], callback_data: 'inline_stars_auto', style: 'success' }],
-            [{ text: (btnTexts[lang] || btnTexts.uz)[1], callback_data: 'inline_ton_auto',   style: 'success' }],
-            [BACK_BTN(lang)]
-          ]
-        }
-      });
-    }
+    // menu_deposit — deposit.js da handle qilinadi (duplicate oldini olish)
 
     // ── PUL YECHISH ───────────────────────────────────────────
     if (data === 'menu_withdraw') {
@@ -259,7 +207,7 @@ module.exports = function registerMenuRouter(bot) {
         user.stateData = {};
         await user.save();
       }
-      return bot.sendMessage(chatId, getText(lang, 'welcome_back'), getMainMenuKeyboard(lang, admin));
+      return sendMainMenu(bot, chatId, lang, admin, getText(lang, 'welcome_back'));
     }
   });
 };
