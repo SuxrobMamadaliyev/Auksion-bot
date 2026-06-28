@@ -3,7 +3,7 @@ const { isAdmin, getMainMenuKeyboard } = require('./helpers');
 const { getSetting } = require('./Settings');
 const User = require('./User');
 const Task = require('./Task');
-const { sendMainMenu } = require('./start');
+const { sendMainMenu } = require('./menuUtils');
 
 const BACK_BTN = (lang) => ({
   text: { uz: '🔙 Orqaga', ru: '🔙 Назад', en: '🔙 Back' }[lang] || '🔙 Orqaga',
