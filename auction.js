@@ -69,6 +69,43 @@ async function resumeAuctionTimer(bot) {
 module.exports = function registerAuctionHandlers(bot) {
   const auctionTriggers = Object.values(LANGUAGES).map(l => l.main_menu_auction);
 
+  // menu_auction callback
+  bot.on('callback_query', async (query) => {
+    if (query.data !== 'menu_auction') return;
+    const userId = String(query.from.id);
+    const user = await User.findOne({ telegramId: userId });
+    const lang = user && user.lang ? user.lang : 'uz';
+    const auction = await getOrCreateAuction();
+    await bot.answerCallbackQuery(query.id);
+
+    const rules = [1,2,3,4,5,6,7,8].map(i => getText(lang, 'auction_rules_' + i)).join('\n');
+    const rulesTitle = getText(lang, 'auction_rules_title');
+
+    let auctionStatus;
+    if (auction.active && auction.endTime) {
+      const remaining = Math.max(0, new Date(auction.endTime) - new Date());
+      const mins = Math.floor(remaining / 60000);
+      const secs = Math.floor((remaining % 60000) / 1000);
+      auctionStatus = '\n\n🔴 <b>Auksion faol!</b>\n💰 Joriy stavka: ' + auction.currentBid + ' ⭐\n🏦 Bank: ' + auction.bank + ' ⭐\n⏱ Qolgan vaqt: ' + mins + ':' + String(secs).padStart(2,'0');
+    } else {
+      auctionStatus = '\n\n⚪ Auksion hozirda faol emas.';
+    }
+
+    const keyboard = [];
+    if (auction.active) {
+      keyboard.push([{ text: getText(lang, 'auction_btn_watch'), callback_data: 'auction_bid' }]);
+    } else {
+      keyboard.push([{ text: getText(lang, 'auction_btn_start'), callback_data: 'auction_start' }]);
+    }
+    const backLabel = { uz: '🔙 Orqaga', ru: '🔙 Назад', en: '🔙 Back' };
+    keyboard.push([{ text: backLabel[lang] || backLabel.uz, callback_data: 'menu_back' }]);
+
+    return bot.sendMessage(query.message.chat.id, rulesTitle + '\n' + rules + auctionStatus, {
+      parse_mode: 'HTML',
+      reply_markup: { inline_keyboard: keyboard }
+    });
+  });
+
   // Auksion menyu
   bot.on('message', async (msg) => {
     if (!auctionTriggers.includes(msg.text)) return;
@@ -113,7 +150,25 @@ module.exports = function registerAuctionHandlers(bot) {
     const auction = await getOrCreateAuction();
 
     if (auction.active) {
-      return bot.answerCallbackQuery(query.id, { text: getText(lang, 'auction_already_active'), show_alert: true });
+      await bot.answerCallbackQuery(query.id);
+      const chLink = (process.env.AUCTION_CHANNEL || '@auksionstarscomunity').replace('@', '');
+      const remaining = Math.max(0, new Date(auction.endTime) - new Date());
+      const mins = Math.floor(remaining / 60000);
+      const secs = Math.floor((remaining % 60000) / 1000);
+      const alreadyTxt = {
+        uz: '🔴 Auksion allaqachon boshlangan!\n\n💰 Joriy stavka: ' + auction.currentBid + ' ⭐\n🏦 Bank: ' + auction.bank + ' ⭐\n⏱ Qolgan vaqt: ' + mins + ':' + String(secs).padStart(2,'0') + '\n\n👇 Kanalda kuzating va qatnashing:',
+        ru: '🔴 Аукцион уже идёт!\n\n💰 Ставка: ' + auction.currentBid + ' ⭐\n🏦 Банк: ' + auction.bank + ' ⭐\n⏱ Осталось: ' + mins + ':' + String(secs).padStart(2,'0') + '\n\n👇 Следите в канале:',
+        en: '🔴 Auction already active!\n\n💰 Bid: ' + auction.currentBid + ' ⭐\n🏦 Bank: ' + auction.bank + ' ⭐\n⏱ Remaining: ' + mins + ':' + String(secs).padStart(2,'0') + '\n\n👇 Follow in channel:'
+      };
+      return bot.sendMessage(query.message.chat.id, alreadyTxt[lang] || alreadyTxt.uz, {
+        parse_mode: 'HTML',
+        reply_markup: {
+          inline_keyboard: [
+            [{ text: '📢 Auksion kanaliga otish', url: 'https://t.me/' + chLink }],
+            [{ text: '💰 Stavka qoyish', callback_data: 'auction_bid' }]
+          ]
+        }
+      });
     }
     if (!user || user.balance < 1) {
       return bot.answerCallbackQuery(query.id, { text: getText(lang, 'auction_no_funds'), show_alert: true });
@@ -177,7 +232,20 @@ module.exports = function registerAuctionHandlers(bot) {
       await auction.save();
     } catch (e) {}
 
-    await bot.sendMessage(msg.chat.id, getText(lang, 'auction_started_msg'));
+    const auctionChannelLink = (process.env.AUCTION_CHANNEL || '@auksionstarscomunity').replace('@', '');
+    const startTexts = {
+      uz: `🚀 <b>Auksion boshlandi!\n\n💰 Boshlangich stavka: ${amount} ⭐\n\n👇 Auksionni kanalda kuzating:`,
+      ru: `🚀 <b>Аукцион начался!\n\n💰 Начальная ставка: ${amount} ⭐\n\n👇 Следите в канале:`,
+      en: `🚀 <b>Auction started!\n\n💰 Starting bid: ${amount} ⭐\n\n👇 Follow in the channel:`
+    };
+    await bot.sendMessage(msg.chat.id, (startTexts[lang] || startTexts.uz), {
+      parse_mode: 'HTML',
+      reply_markup: {
+        inline_keyboard: [[
+          { text: '📢 Auksion kanaliga otish', url: 'https://t.me/' + auctionChannelLink }
+        ]]
+      }
+    });
   });
 
   // Stavka qo'yish
