@@ -234,9 +234,9 @@ module.exports = function registerAuctionHandlers(bot) {
 
     const auctionChannelLink = (process.env.AUCTION_CHANNEL || '@auksionstarscomunity').replace('@', '');
     const startTexts = {
-      uz: `🚀 <b>Auksion boshlandi!\n\n💰 Boshlangich stavka: ${amount} ⭐\n\n👇 Auksionni kanalda kuzating:`,
-      ru: `🚀 <b>Аукцион начался!\n\n💰 Начальная ставка: ${amount} ⭐\n\n👇 Следите в канале:`,
-      en: `🚀 <b>Auction started!\n\n💰 Starting bid: ${amount} ⭐\n\n👇 Follow in the channel:`
+      uz: `🚀 <b>Auksion boshlandi!</b>\n\n💰 Boshlang'ich stavka: <b>${amount} ⭐</b>\n\n👇 Auksionni kanalda kuzating:`,
+      ru: `🚀 <b>Аукцион начался!</b>\n\n💰 Начальная ставка: <b>${amount} ⭐</b>\n\n👇 Следите в канале:`,
+      en: `🚀 <b>Auction started!</b>\n\n💰 Starting bid: <b>${amount} ⭐</b>\n\n👇 Follow in the channel:`
     };
     await bot.sendMessage(msg.chat.id, (startTexts[lang] || startTexts.uz), {
       parse_mode: 'HTML',
